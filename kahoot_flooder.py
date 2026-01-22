@@ -4,6 +4,7 @@ import signal
 import sys
 import tkinter as tk
 from tkinter import ttk, messagebox
+import random
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -20,7 +21,7 @@ import os
 # GUI
 # =========================
 def start_flooding():
-    global pin, num_bots, name_template, batch_delay, headless_mode
+    global pin, num_bots, name_template, batch_delay, headless_mode, enable_reactions, reaction_choice
     pin = pin_entry.get()
     if not pin:
         messagebox.showerror("Error", "Please enter a Kahoot PIN")
@@ -37,6 +38,8 @@ def start_flooding():
         messagebox.showerror("Error", "Batch delay must be a number")
         return
     headless_mode = headless_var.get()
+    enable_reactions = enable_reactions_var.get()
+    reaction_choice = reaction_var.get()
 
     start_button.config(state=tk.DISABLED)
     stop_button.config(state=tk.NORMAL)
@@ -104,20 +107,29 @@ batch_delay_entry = ttk.Entry(root)
 batch_delay_entry.insert(0, "1")
 batch_delay_entry.grid(row=3, column=1, padx=5, pady=5)
 
+enable_reactions_var = tk.BooleanVar(value=True)
+enable_reactions_check = ttk.Checkbutton(root, text="Enable reactions", variable=enable_reactions_var)
+enable_reactions_check.grid(row=4, column=0, columnspan=2, pady=5)
+
+ttk.Label(root, text="Reaction choice:").grid(row=5, column=0, sticky=tk.W, padx=5, pady=5)
+reaction_var = tk.StringVar(value="Random")
+reaction_combo = ttk.Combobox(root, textvariable=reaction_var, values=["Random", "Thinking", "Wow", "Heart", "ThumbsUp"])
+reaction_combo.grid(row=5, column=1, padx=5, pady=5)
+
 headless_var = tk.BooleanVar(value=True)
 headless_check = ttk.Checkbutton(root, text="Headless mode", variable=headless_var)
-headless_check.grid(row=4, column=0, columnspan=2, pady=5)
+headless_check.grid(row=6, column=0, columnspan=2, pady=5)
 
 # Buttons
 start_button = ttk.Button(root, text="Start Flooding", command=start_flooding)
-start_button.grid(row=5, column=0, padx=5, pady=10)
+start_button.grid(row=7, column=0, padx=5, pady=10)
 
 stop_button = ttk.Button(root, text="Stop Flooding", command=stop_flooding, state=tk.DISABLED)
-stop_button.grid(row=5, column=1, padx=5, pady=10)
+stop_button.grid(row=7, column=1, padx=5, pady=10)
 
 # Log text area
 log_frame = ttk.Frame(root)
-log_frame.grid(row=6, column=0, columnspan=2, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S))
+log_frame.grid(row=8, column=0, columnspan=2, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S))
 
 log_text = tk.Text(log_frame, height=10, width=50, wrap=tk.WORD)
 log_scroll = ttk.Scrollbar(log_frame, orient=tk.VERTICAL, command=log_text.yview)
@@ -127,7 +139,7 @@ log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 log_scroll.pack(side=tk.RIGHT, fill=tk.Y)
 
 root.columnconfigure(1, weight=1)
-root.rowconfigure(6, weight=1)
+root.rowconfigure(8, weight=1)
 
 # =========================
 # Shared state
@@ -187,7 +199,26 @@ def create_bot(bot_index):
         nickname_input.send_keys(nickname)
         nickname_input.send_keys(Keys.RETURN)
 
-        time.sleep(2)  # Wait for joining
+        time.sleep(2)  # Wait for page
+
+        # Click reaction button if enabled
+        if enable_reactions:
+            try:
+                reaction_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-functional-selector="reaction-prompt-button"]')))
+                reaction_button.click()
+                time.sleep(1)
+
+                # Choose and click reaction
+                reaction_types = ["Thinking", "Wow", "Heart", "ThumbsUp"]
+                if reaction_choice == "Random":
+                    chosen = random.choice(reaction_types)
+                else:
+                    chosen = reaction_choice
+                reaction_option = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, f'[data-functional-selector="reaction-type-{chosen}"]')))
+                reaction_option.click()
+                time.sleep(1)
+            except:
+                pass
 
         # Store driver safely
         with drivers_lock:
