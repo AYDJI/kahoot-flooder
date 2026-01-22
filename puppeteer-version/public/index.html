@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kahoot Flooder - Puppeteer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .control-panel {
+            margin-top: 20px;
+            display: none;
+        }
+        .reaction-buttons, .answer-buttons {
+            margin: 10px 0;
+        }
+        .reaction-buttons button, .answer-buttons button {
+            margin: 5px;
+        }
+        .log {
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            margin-top: 20px;
+        }
+        .checkbox {
+            display: flex;
+            align-items: center;
+        }
+        .checkbox input {
+            width: auto;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Kahoot Flooder - Puppeteer</h1>
+
+    <div class="form-group">
+        <label for="pin">Kahoot PIN:</label>
+        <input type="text" id="pin" required>
+    </div>
+
+    <div class="form-group">
+        <label for="numBots">Number of bots:</label>
+        <input type="number" id="numBots" value="10" min="1">
+    </div>
+
+    <div class="form-group">
+        <label for="nameTemplate">Name template:</label>
+        <input type="text" id="nameTemplate" value="Bot{}">
+    </div>
+
+    <div class="form-group">
+        <label for="batchDelay">Batch delay (seconds):</label>
+        <input type="number" id="batchDelay" value="1" min="0" step="0.1">
+    </div>
+
+    <div class="form-group checkbox">
+        <input type="checkbox" id="enableReactions" checked>
+        <label for="enableReactions">Enable reactions</label>
+    </div>
+
+    <div class="form-group">
+        <label for="reactionChoice">Reaction choice:</label>
+        <select id="reactionChoice">
+            <option value="Random">Random</option>
+            <option value="Thinking">Thinking</option>
+            <option value="Wow">Wow</option>
+            <option value="Heart">Heart</option>
+            <option value="ThumbsUp">ThumbsUp</option>
+        </select>
+    </div>
+
+    <div class="form-group checkbox">
+        <input type="checkbox" id="headlessMode" checked>
+        <label for="headlessMode">Headless mode</label>
+    </div>
+
+    <button id="startBtn">Start Flooding</button>
+    <button id="stopBtn" disabled>Stop Flooding</button>
+
+    <div class="control-panel" id="controlPanel">
+        <h2>Bot Control</h2>
+
+        <div class="reaction-buttons">
+            <h3>Send Reaction to All Bots</h3>
+            <button id="reactionThinking">🤔 Thinking</button>
+            <button id="reactionWow">😲 Wow</button>
+            <button id="reactionHeart">❤️ Heart</button>
+            <button id="reactionThumbsUp">👍 ThumbsUp</button>
+        </div>
+
+        <div class="answer-buttons">
+            <h3>Select Answer for All Bots</h3>
+            <button id="answer0">Answer 1 (Red)</button>
+            <button id="answer1">Answer 2 (Blue)</button>
+            <button id="answer2">Answer 3 (Yellow)</button>
+            <button id="answer3">Answer 4 (Green)</button>
+        </div>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const controlPanel = document.getElementById('controlPanel');
+        const log = document.getElementById('log');
+
+        startBtn.addEventListener('click', () => {
+            const config = {
+                pin: document.getElementById('pin').value,
+                numBots: parseInt(document.getElementById('numBots').value),
+                nameTemplate: document.getElementById('nameTemplate').value,
+                batchDelay: parseFloat(document.getElementById('batchDelay').value),
+                enableReactions: document.getElementById('enableReactions').checked,
+                reactionChoice: document.getElementById('reactionChoice').value,
+                headlessMode: document.getElementById('headlessMode').checked
+            };
+
+            if (!config.pin) {
+                alert('Please enter a Kahoot PIN');
+                return;
+            }
+
+            socket.emit('startFlooding', config);
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+        });
+
+        stopBtn.addEventListener('click', () => {
+            socket.emit('stopFlooding');
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            controlPanel.style.display = 'none';
+        });
+
+        // Reaction buttons
+        document.getElementById('reactionThinking').addEventListener('click', () => socket.emit('sendReaction', 'Thinking'));
+        document.getElementById('reactionWow').addEventListener('click', () => socket.emit('sendReaction', 'Wow'));
+        document.getElementById('reactionHeart').addEventListener('click', () => socket.emit('sendReaction', 'Heart'));
+        document.getElementById('reactionThumbsUp').addEventListener('click', () => socket.emit('sendReaction', 'ThumbsUp'));
+
+        // Answer buttons
+        document.getElementById('answer0').addEventListener('click', () => socket.emit('sendAnswer', 0));
+        document.getElementById('answer1').addEventListener('click', () => socket.emit('sendAnswer', 1));
+        document.getElementById('answer2').addEventListener('click', () => socket.emit('sendAnswer', 2));
+        document.getElementById('answer3').addEventListener('click', () => socket.emit('sendAnswer', 3));
+
+        // Socket listeners
+        socket.on('log', (message) => {
+            log.textContent += message + '\n';
+            log.scrollTop = log.scrollHeight;
+        });
+
+        socket.on('botsReady', () => {
+            controlPanel.style.display = 'block';
+        });
+
+        socket.on('floodingStopped', () => {
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            controlPanel.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
