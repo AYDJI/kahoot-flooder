@@ -13,13 +13,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
+import os
 
 
 # =========================
 # GUI
 # =========================
 def start_flooding():
-    global pin, num_bots, name_template, batch_delay
+    global pin, num_bots, name_template, batch_delay, headless_mode
     pin = pin_entry.get()
     if not pin:
         messagebox.showerror("Error", "Please enter a Kahoot PIN")
@@ -35,6 +36,7 @@ def start_flooding():
     except ValueError:
         messagebox.showerror("Error", "Batch delay must be a number")
         return
+    headless_mode = headless_var.get()
 
     start_button.config(state=tk.DISABLED)
     stop_button.config(state=tk.NORMAL)
@@ -66,8 +68,9 @@ def run_flooding():
 
             time.sleep(batch_delay)
 
+        mode = "headless" if headless_mode else "visible"
         log_text.insert(tk.END, f"\nSuccessfully created {len(drivers)} bots for PIN {pin}.\n")
-        log_text.insert(tk.END, "Bots are running in headless mode.\n")
+        log_text.insert(tk.END, f"Bots are running in {mode} mode.\n")
         log_text.see(tk.END)
 
         # Keep running until interrupted
@@ -101,16 +104,20 @@ batch_delay_entry = ttk.Entry(root)
 batch_delay_entry.insert(0, "1")
 batch_delay_entry.grid(row=3, column=1, padx=5, pady=5)
 
+headless_var = tk.BooleanVar(value=True)
+headless_check = ttk.Checkbutton(root, text="Headless mode", variable=headless_var)
+headless_check.grid(row=4, column=0, columnspan=2, pady=5)
+
 # Buttons
 start_button = ttk.Button(root, text="Start Flooding", command=start_flooding)
-start_button.grid(row=4, column=0, padx=5, pady=10)
+start_button.grid(row=5, column=0, padx=5, pady=10)
 
 stop_button = ttk.Button(root, text="Stop Flooding", command=stop_flooding, state=tk.DISABLED)
-stop_button.grid(row=4, column=1, padx=5, pady=10)
+stop_button.grid(row=5, column=1, padx=5, pady=10)
 
 # Log text area
 log_frame = ttk.Frame(root)
-log_frame.grid(row=5, column=0, columnspan=2, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S))
+log_frame.grid(row=6, column=0, columnspan=2, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S))
 
 log_text = tk.Text(log_frame, height=10, width=50, wrap=tk.WORD)
 log_scroll = ttk.Scrollbar(log_frame, orient=tk.VERTICAL, command=log_text.yview)
@@ -120,17 +127,7 @@ log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 log_scroll.pack(side=tk.RIGHT, fill=tk.Y)
 
 root.columnconfigure(1, weight=1)
-root.rowconfigure(5, weight=1)
-
-# =========================
-# Chrome options (headless)
-# =========================
-chrome_options = Options()
-chrome_options.add_argument("--headless=new")
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-dev-shm-usage")
-chrome_options.add_argument("--disable-gpu")
-
+root.rowconfigure(6, weight=1)
 
 # =========================
 # Shared state
@@ -138,6 +135,7 @@ chrome_options.add_argument("--disable-gpu")
 drivers = []
 drivers_lock = threading.Lock()
 stop_event = threading.Event()
+headless_mode = True
 
 
 # =========================
@@ -146,10 +144,29 @@ stop_event = threading.Event()
 def create_bot(bot_index):
     driver = None
     try:
+        chrome_options = Options()
+        if headless_mode:
+            chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        if headless_mode:
+            chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+            chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+            chrome_options.add_experimental_option('useAutomationExtension', False)
+            chrome_options.add_argument("--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+
+        driver_path = ChromeDriverManager().install()
+        if 'THIRD_PARTY_NOTICES' in driver_path:
+            base_dir = os.path.dirname(driver_path)
+            driver_path = os.path.join(base_dir, 'chromedriver')
+        os.chmod(driver_path, 0o755)
         driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
+            service=Service(driver_path),
             options=chrome_options
         )
+
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
         driver.get("https://kahoot.it/")
 
@@ -169,6 +186,8 @@ def create_bot(bot_index):
         nickname = name_template.format(bot_index + 1)
         nickname_input.send_keys(nickname)
         nickname_input.send_keys(Keys.RETURN)
+
+        time.sleep(2)  # Wait for joining
 
         # Store driver safely
         with drivers_lock:
