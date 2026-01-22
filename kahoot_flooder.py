@@ -254,10 +254,10 @@ def open_control_window():
 
     ttk.Label(control, text="Select Answer for All Bots").pack(pady=10)
 
-    ttk.Button(control, text="🔴 Answer 1 (Red)", command=lambda: send_answer(0)).pack(pady=2)
-    ttk.Button(control, text="🔵 Answer 2 (Blue)", command=lambda: send_answer(1)).pack(pady=2)
-    ttk.Button(control, text="🟡 Answer 3 (Yellow)", command=lambda: send_answer(2)).pack(pady=2)
-    ttk.Button(control, text="🟢 Answer 4 (Green)", command=lambda: send_answer(3)).pack(pady=2)
+    ttk.Button(control, text="Answer 1 (Red)", command=lambda: send_answer(0)).pack(pady=2)
+    ttk.Button(control, text="Answer 2 (Blue)", command=lambda: send_answer(1)).pack(pady=2)
+    ttk.Button(control, text="Answer 3 (Yellow)", command=lambda: send_answer(2)).pack(pady=2)
+    ttk.Button(control, text="Answer 4 (Green)", command=lambda: send_answer(3)).pack(pady=2)
 
 def send_reaction(reaction_type):
     threading.Thread(target=send_reaction_thread, args=(reaction_type,), daemon=True).start()
