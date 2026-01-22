@@ -1,51 +1,70 @@
 # Kahoot Flooder
 
-A Python script that creates multiple bot accounts to flood a Kahoot quiz session. The bots join simultaneously for maximum speed.
+A tool that creates multiple bot accounts to flood a Kahoot quiz session. Available in two implementations:
 
-## Features
+## Project Structure
 
-- GUI interface for easy configuration
-- Optimized for fast bot joining with parallel processing
-- Headless Chrome browsers to avoid visual clutter
-- Customizable number of bots, names, and delays
+- **`python-version/`** - Original Python implementation using Selenium WebDriver with Tkinter GUI
+- **`puppeteer-version/`** - Modern Node.js/Puppeteer implementation with web-based interface
 
-## Requirements
+## Python Version (python-version/)
+
+**Features:**
+
+- Desktop GUI interface using Tkinter
+- Selenium WebDriver automation
+- Threading-based bot management
+- Real-time control panel for reactions and answers
+
+**Requirements:**
 
 - Python 3.7+
-- Google Chrome browser installed
-- Windows/Linux/MacOS
+- Google Chrome browser
+- ChromeDriver (auto-managed)
 
-## Installation
+**Quick Start:**
 
-1. Clone or download the repository.
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+cd python-version
+pip install -r requirements.txt
+python kahoot_flooder.py
+```
 
-## Usage
+## Puppeteer Version (puppeteer-version/)
 
-1. Run the script:
-   ```bash
-   python kahoot_flooder.py
-   ```
+**Features:**
 
-2. In the GUI:
-   - Enter the Kahoot PIN for the session you want to flood.
-   - Set the number of bots (default: 10).
-   - Customize the name template (default: "Bot{}" where {} is the bot number).
-   - Adjust batch delay if needed (default: 0 for maximum speed).
-   - Click "Start Flooding".
+- Modern web-based interface
+- Puppeteer for headless Chrome automation
+- Real-time communication via WebSocket
+- Better performance for large bot counts
+- Cross-platform web interface
 
-3. The script will create bots that join the Kahoot session simultaneously.
-4. Bots will remain in the session until you click "Stop Flooding".
+**Requirements:**
 
-## Optimizations
+- Node.js 14+
+- Chrome/Chromium browser
 
-- All bots start joining at the same time (no batching delays).
-- Chrome runs in headless mode with performance optimizations (disabled images, extensions, etc.).
-- Parallel thread execution for concurrent bot creation.
+**Quick Start:**
+
+```bash
+cd puppeteer-version
+npm install
+npm start
+# Then open http://localhost:3000
+```
+
+## Common Features
+
+Both versions support:
+
+- Multiple bot creation with customizable names
+- Batch processing with configurable delays
+- Headless/visible browser modes
+- Automatic reactions on join
+- Real-time control of all bots (reactions and answers)
+- Configurable bot counts and naming templates
 
 ## Disclaimer
 
-This tool is for educational purposes only. Flooding Kahoot sessions may violate terms of service and could result in bans. Use responsibly.
+This tool is for educational purposes only. Using bots in Kahoot games may violate Kahoot's terms of service. Use at your own risk.
