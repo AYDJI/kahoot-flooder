@@ -16,6 +16,7 @@ This is a Node.js/Puppeteer version of the Kahoot flooder, providing a web-based
 1. Make sure you have Node.js installed (version 14 or higher)
 2. Navigate to the puppeteer-version directory
 3. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -23,6 +24,7 @@ This is a Node.js/Puppeteer version of the Kahoot flooder, providing a web-based
 ## Usage
 
 1. Start the server:
+
    ```bash
    npm start
    ```
