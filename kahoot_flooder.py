@@ -76,6 +76,9 @@ def run_flooding():
         log_text.insert(tk.END, f"Bots are running in {mode} mode.\n")
         log_text.see(tk.END)
 
+        # Open control window
+        root.after(0, open_control_window)
+
         # Keep running until interrupted
         while not stop_event.is_set():
             time.sleep(1)
@@ -233,6 +236,60 @@ def create_bot(bot_index):
             except:
                 pass
 
+
+# =========================
+# Control window
+# =========================
+def open_control_window():
+    control = tk.Toplevel(root)
+    control.title("Bot Control")
+    control.geometry("250x300")
+
+    ttk.Label(control, text="Send Reaction to All Bots").pack(pady=5)
+
+    ttk.Button(control, text="🤔 Thinking", command=lambda: send_reaction("Thinking")).pack(pady=2)
+    ttk.Button(control, text="😲 Wow", command=lambda: send_reaction("Wow")).pack(pady=2)
+    ttk.Button(control, text="❤️ Heart", command=lambda: send_reaction("Heart")).pack(pady=2)
+    ttk.Button(control, text="👍 ThumbsUp", command=lambda: send_reaction("ThumbsUp")).pack(pady=2)
+
+    ttk.Label(control, text="Select Answer for All Bots").pack(pady=10)
+
+    ttk.Button(control, text="🔴 Answer 1 (Red)", command=lambda: send_answer(0)).pack(pady=2)
+    ttk.Button(control, text="🔵 Answer 2 (Blue)", command=lambda: send_answer(1)).pack(pady=2)
+    ttk.Button(control, text="🟡 Answer 3 (Yellow)", command=lambda: send_answer(2)).pack(pady=2)
+    ttk.Button(control, text="🟢 Answer 4 (Green)", command=lambda: send_answer(3)).pack(pady=2)
+
+def send_reaction(reaction_type):
+    threading.Thread(target=send_reaction_thread, args=(reaction_type,), daemon=True).start()
+
+def send_reaction_thread(reaction_type):
+    with drivers_lock:
+        for driver in drivers:
+            try:
+                # Click react button
+                reaction_button = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-functional-selector="reaction-prompt-button"]')))
+                reaction_button.click()
+                time.sleep(0.5)
+
+                # Click the reaction
+                reaction_option = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, f'[data-functional-selector="reaction-type-{reaction_type}"]')))
+                reaction_option.click()
+                time.sleep(0.5)
+            except:
+                pass
+
+def send_answer(index):
+    threading.Thread(target=send_answer_thread, args=(index,), daemon=True).start()
+
+def send_answer_thread(index):
+    with drivers_lock:
+        for driver in drivers:
+            try:
+                answer_button = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, f'[data-functional-selector="answer-{index}"]')))
+                answer_button.click()
+                time.sleep(0.5)
+            except:
+                pass
 
 # =========================
 # Graceful shutdown handler
