@@ -11,19 +11,23 @@
             margin: 0 auto;
             padding: 20px;
         }
+
         .form-group {
             margin-bottom: 15px;
         }
+
         label {
             display: block;
             margin-bottom: 5px;
         }
+
         input, select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+
         button {
             background-color: #007bff;
             color: white;
@@ -33,23 +37,29 @@
             cursor: pointer;
             margin: 5px;
         }
+
         button:hover {
             background-color: #0056b3;
         }
+
         button:disabled {
             background-color: #ccc;
             cursor: not-allowed;
         }
+
         .control-panel {
             margin-top: 20px;
             display: none;
         }
+
         .reaction-buttons, .answer-buttons {
             margin: 10px 0;
         }
+
         .reaction-buttons button, .answer-buttons button {
             margin: 5px;
         }
+
         .log {
             border: 1px solid #ddd;
             padding: 10px;
@@ -58,10 +68,12 @@
             background-color: #f9f9f9;
             margin-top: 20px;
         }
+
         .checkbox {
             display: flex;
             align-items: center;
         }
+
         .checkbox input {
             width: auto;
             margin-right: 10px;
@@ -138,69 +150,6 @@
     <div class="log" id="log"></div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-
-        const startBtn = document.getElementById('startBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const controlPanel = document.getElementById('controlPanel');
-        const log = document.getElementById('log');
-
-        startBtn.addEventListener('click', () => {
-            const config = {
-                pin: document.getElementById('pin').value,
-                numBots: parseInt(document.getElementById('numBots').value),
-                nameTemplate: document.getElementById('nameTemplate').value,
-                batchDelay: parseFloat(document.getElementById('batchDelay').value),
-                enableReactions: document.getElementById('enableReactions').checked,
-                reactionChoice: document.getElementById('reactionChoice').value,
-                headlessMode: document.getElementById('headlessMode').checked
-            };
-
-            if (!config.pin) {
-                alert('Please enter a Kahoot PIN');
-                return;
-            }
-
-            socket.emit('startFlooding', config);
-            startBtn.disabled = true;
-            stopBtn.disabled = false;
-        });
-
-        stopBtn.addEventListener('click', () => {
-            socket.emit('stopFlooding');
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            controlPanel.style.display = 'none';
-        });
-
-        // Reaction buttons
-        document.getElementById('reactionThinking').addEventListener('click', () => socket.emit('sendReaction', 'Thinking'));
-        document.getElementById('reactionWow').addEventListener('click', () => socket.emit('sendReaction', 'Wow'));
-        document.getElementById('reactionHeart').addEventListener('click', () => socket.emit('sendReaction', 'Heart'));
-        document.getElementById('reactionThumbsUp').addEventListener('click', () => socket.emit('sendReaction', 'ThumbsUp'));
-
-        // Answer buttons
-        document.getElementById('answer0').addEventListener('click', () => socket.emit('sendAnswer', 0));
-        document.getElementById('answer1').addEventListener('click', () => socket.emit('sendAnswer', 1));
-        document.getElementById('answer2').addEventListener('click', () => socket.emit('sendAnswer', 2));
-        document.getElementById('answer3').addEventListener('click', () => socket.emit('sendAnswer', 3));
-
-        // Socket listeners
-        socket.on('log', (message) => {
-            log.textContent += message + '\n';
-            log.scrollTop = log.scrollHeight;
-        });
-
-        socket.on('botsReady', () => {
-            controlPanel.style.display = 'block';
-        });
-
-        socket.on('floodingStopped', () => {
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            controlPanel.style.display = 'none';
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
