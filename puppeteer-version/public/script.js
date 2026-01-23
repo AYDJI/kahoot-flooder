@@ -5,6 +5,14 @@ const stopBtn = document.getElementById('stopBtn');
 const controlPanel = document.getElementById('controlPanel');
 const log = document.getElementById('log');
 
+// AI provider toggle
+document.getElementById('aiProvider').addEventListener('change', function() {
+    const provider = this.value;
+    document.getElementById('apiKeyGroup').style.display = (provider === 'gemini' || provider === 'openrouter') ? 'block' : 'none';
+    document.getElementById('ollamaModelGroup').style.display = provider === 'ollama' ? 'block' : 'none';
+    document.getElementById('openRouterModelGroup').style.display = provider === 'openrouter' ? 'block' : 'none';
+});
+
 startBtn.addEventListener('click', () => {
     const config = {
         pin: document.getElementById('pin').value,
@@ -13,7 +21,12 @@ startBtn.addEventListener('click', () => {
         batchDelay: parseFloat(document.getElementById('batchDelay').value),
         enableReactions: document.getElementById('enableReactions').checked,
         reactionChoice: document.getElementById('reactionChoice').value,
-        headlessMode: document.getElementById('headlessMode').checked
+        headlessMode: document.getElementById('headlessMode').checked,
+        enableAI: document.getElementById('enableAI').checked,
+        aiProvider: document.getElementById('aiProvider').value,
+        apiKey: document.getElementById('apiKey').value,
+        ollamaModel: document.getElementById('ollamaModel').value,
+        openRouterModel: document.getElementById('openRouterModel').value
     };
 
     if (!config.pin) {

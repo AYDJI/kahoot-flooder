@@ -136,6 +136,36 @@
         <label for="headlessMode">Headless mode</label>
     </div>
 
+    <div class="form-group checkbox">
+        <input type="checkbox" id="enableAI">
+        <label for="enableAI">Enable AI Answering</label>
+    </div>
+
+    <div class="form-group">
+        <label for="aiProvider">AI Provider:</label>
+        <select id="aiProvider">
+            <option value="none">None</option>
+            <option value="gemini">Gemini</option>
+            <option value="ollama">Ollama</option>
+            <option value="openrouter">OpenRouter</option>
+        </select>
+    </div>
+
+    <div class="form-group" id="apiKeyGroup" style="display: none;">
+        <label for="apiKey">API Key:</label>
+        <input type="password" id="apiKey" placeholder="Enter API key">
+    </div>
+
+    <div class="form-group" id="ollamaModelGroup" style="display: none;">
+        <label for="ollamaModel">Ollama Model:</label>
+        <input type="text" id="ollamaModel" value="llama2" placeholder="e.g. llama2, mistral">
+    </div>
+
+    <div class="form-group" id="openRouterModelGroup" style="display: none;">
+        <label for="openRouterModel">OpenRouter Model:</label>
+        <input type="text" id="openRouterModel" value="anthropic/claude-3-haiku" placeholder="e.g. anthropic/claude-3-haiku">
+    </div>
+
     <button id="startBtn">Start Flooding</button>
     <button id="stopBtn" disabled>Stop Flooding</button>
 
