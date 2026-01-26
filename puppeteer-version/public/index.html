@@ -5,191 +5,480 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kahoot Flooder - Puppeteer</title>
     <style>
-        #answer0{
-            background-color: red;
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-radius: 8px;
+            --transition: all 0.3s ease;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
-        #answer1{
-            background-color: blue;
+
+        * {
+            box-sizing: border-box;
         }
-        #answer2{
-            background-color: orange;
-        }
-        #answer3{
-            background-color: green;
-        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
+            font-family: var(--font-family);
+            background-color: #ffffff;
+            color: var(--dark-color);
+            line-height: 1.6;
+            margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+
+        .panel {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            transition: var(--transition);
+        }
+
+        .panel:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
         }
 
         .form-group {
             margin-bottom: 15px;
         }
 
-        label {
+        .form-group label {
             display: block;
             margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--dark-color);
         }
 
-        input, select {
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="password"],
+        .form-group select,
+        .form-group textarea {
             width: 100%;
-            padding: 8px;
+            padding: 10px 12px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            transition: var(--transition);
+            background-color: #ffffff;
         }
 
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 5px;
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
         }
 
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        .control-panel {
-            margin-top: 20px;
-            display: none;
-        }
-
-        .reaction-buttons, .answer-buttons {
-            margin: 10px 0;
-        }
-
-        .reaction-buttons button, .answer-buttons button {
-            margin: 5px;
-        }
-
-        .log {
-            border: 1px solid #ddd;
-            padding: 10px;
-            height: 200px;
-            overflow-y: auto;
-            background-color: #f9f9f9;
-            margin-top: 20px;
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
         }
 
         .checkbox {
             display: flex;
             align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
         }
 
-        .checkbox input {
-            width: auto;
-            margin-right: 10px;
+        .checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox label {
+            cursor: pointer;
+            user-select: none;
+            margin: 0;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 5px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background-color: var(--secondary-color);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background-color: #c82333;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background-color: #218838;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .control-section {
+            display: none;
+        }
+
+        .control-buttons {
+            margin-bottom: 20px;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .answer-btn {
+            padding: 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #answer0 { background-color: #ff4757; }
+        #answer1 { background-color: #3742fa; }
+        #answer2 { background-color: #ffa502; }
+        #answer3 { background-color: #26de81; }
+
+        .answer-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .reaction-btn {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            background-color: var(--light-color);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .reaction-btn:hover {
+            background-color: #e2e6ea;
+            border-color: #adb5bd;
+        }
+
+        .log-container {
+            grid-column: 1 / -1;
+        }
+
+        .log {
+            width: 100%;
+            min-height: 300px;
+            max-height: 400px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            background-color: #f8f9fa;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator.ready {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-indicator.running {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: var(--info-color);
+        }
+
+        .status-indicator.stopped {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Kahoot Flooder - Puppeteer</h1>
+    <div class="container">
+        <header>
+            <h1>Kahoot Flooder</h1>
+            <div class="subtitle">Puppeteer-powered bot automation</div>
+        </header>
 
-    <div class="form-group">
-        <label for="pin">Kahoot PIN:</label>
-        <input type="text" id="pin" required>
+        <main>
+            <section class="panel">
+                <h2 class="panel-title">Configuration</h2>
+                
+                <div class="status-indicator stopped" id="statusIndicator">
+                    <span class="status-dot"></span>
+                    <span>Ready</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pin">Kahoot PIN</label>
+                        <input type="text" id="pin" placeholder="Enter game PIN" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="numBots">Number of Bots</label>
+                        <input type="number" id="numBots" value="10" min="1" max="100">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="nameTemplate">Name Template</label>
+                    <input type="text" id="nameTemplate" value="Bot{}" placeholder="e.g., Bot{}, Player{}">
+                </div>
+
+                <div class="checkbox">
+                    <input type="checkbox" id="useCustomNames" checked>
+                    <label for="useCustomNames">Use custom bot names</label>
+                </div>
+
+                <div class="form-group" id="botNamesGroup">
+                    <label for="botNames">Bot Names</label>
+                    <textarea id="botNames" rows="4" placeholder="Enter names separated by commas or new lines&#10;e.g., Player1, Player2, Player3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="batchDelay">Batch Delay (seconds)</label>
+                        <input type="number" id="batchDelay" value="1" min="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="reactionChoice">Reaction Choice</label>
+                        <select id="reactionChoice">
+                            <option value="Random">Random</option>
+                            <option value="Thinking">🤔 Thinking</option>
+                            <option value="Wow">😲 Wow</option>
+                            <option value="Heart">❤️ Heart</option>
+                            <option value="ThumbsUp">👍 ThumbsUp</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <h3 style="margin-bottom: 15px; color: var(--dark-color);">Features</h3>
+
+                <div class="checkbox">
+                    <input type="checkbox" id="enableReactions" checked>
+                    <label for="enableReactions">Enable Reactions</label>
+                </div>
+
+                <div class="checkbox">
+                    <input type="checkbox" id="headlessMode" checked>
+                    <label for="headlessMode">Headless Mode (run bots in background)</label>
+                </div>
+
+                <div class="checkbox">
+                    <input type="checkbox" id="enableAI">
+                    <label for="enableAI">Enable AI Answering</label>
+                </div>
+
+                <div class="form-group">
+                    <label for="aiProvider">AI Provider</label>
+                    <select id="aiProvider">
+                        <option value="none">None</option>
+                        <option value="gemini">Gemini</option>
+                        <option value="ollama">Ollama</option>
+                        <option value="openrouter">OpenRouter</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="apiKeyGroup" style="display: none;">
+                    <label for="apiKey">API Key</label>
+                    <input type="password" id="apiKey" placeholder="Enter API key">
+                </div>
+
+                <div class="form-group" id="ollamaModelGroup" style="display: none;">
+                    <label for="ollamaModel">Ollama Model</label>
+                    <input type="text" id="ollamaModel" value="llama2" placeholder="e.g., llama2, mistral">
+                </div>
+
+                <div class="form-group" id="openRouterModelGroup" style="display: none;">
+                    <label for="openRouterModel">OpenRouter Model</label>
+                    <input type="text" id="openRouterModel" value="anthropic/claude-3-haiku" placeholder="e.g., anthropic/claude-3-haiku">
+                </div>
+
+                <div class="btn-group">
+                    <button id="startBtn" class="btn btn-success">Start Flooding</button>
+                    <button id="stopBtn" class="btn btn-danger" disabled>Stop Flooding</button>
+                </div>
+            </section>
+
+            <section class="panel control-section" id="controlPanel">
+                <h2 class="panel-title">Bot Control</h2>
+                
+                <div class="control-buttons">
+                    <h3 style="margin-bottom: 10px;">Send Reaction to All Bots</h3>
+                    <div class="button-grid">
+                        <button id="reactionThinking" class="reaction-btn">🤔 Thinking</button>
+                        <button id="reactionWow" class="reaction-btn">😲 Wow</button>
+                        <button id="reactionHeart" class="reaction-btn">❤️ Heart</button>
+                        <button id="reactionThumbsUp" class="reaction-btn">👍 ThumbsUp</button>
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <h3 style="margin-bottom: 10px;">Select Answer for All Bots</h3>
+                    <div class="button-grid">
+                        <button id="answer0" class="answer-btn">Answer 1 (Red)</button>
+                        <button id="answer1" class="answer-btn">Answer 2 (Blue)</button>
+                        <button id="answer2" class="answer-btn">Answer 3 (Yellow)</button>
+                        <button id="answer3" class="answer-btn">Answer 4 (Green)</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <section class="panel log-container">
+            <h2 class="panel-title">Activity Log</h2>
+            <div class="log" id="log"></div>
+        </section>
     </div>
-
-    <div class="form-group">
-        <label for="numBots">Number of bots:</label>
-        <input type="number" id="numBots" value="10" min="1">
-    </div>
-
-    <div class="form-group">
-        <label for="nameTemplate">Name template:</label>
-        <input type="text" id="nameTemplate" value="Bot{}">
-    </div>
-
-    <div class="form-group">
-        <label for="batchDelay">Batch delay (seconds):</label>
-        <input type="number" id="batchDelay" value="1" min="0" step="0.1">
-    </div>
-
-    <div class="form-group checkbox">
-        <input type="checkbox" id="enableReactions" checked>
-        <label for="enableReactions">Enable reactions</label>
-    </div>
-
-    <div class="form-group">
-        <label for="reactionChoice">Reaction choice:</label>
-        <select id="reactionChoice">
-            <option value="Random">Random</option>
-            <option value="Thinking">Thinking</option>
-            <option value="Wow">Wow</option>
-            <option value="Heart">Heart</option>
-            <option value="ThumbsUp">ThumbsUp</option>
-        </select>
-    </div>
-
-    <div class="form-group checkbox">
-        <input type="checkbox" id="headlessMode" checked>
-        <label for="headlessMode">Headless mode</label>
-    </div>
-
-    <div class="form-group checkbox">
-        <input type="checkbox" id="enableAI">
-        <label for="enableAI">Enable AI Answering</label>
-    </div>
-
-    <div class="form-group">
-        <label for="aiProvider">AI Provider:</label>
-        <select id="aiProvider">
-            <option value="none">None</option>
-            <option value="gemini">Gemini</option>
-            <option value="ollama">Ollama</option>
-            <option value="openrouter">OpenRouter</option>
-        </select>
-    </div>
-
-    <div class="form-group" id="apiKeyGroup" style="display: none;">
-        <label for="apiKey">API Key:</label>
-        <input type="password" id="apiKey" placeholder="Enter API key">
-    </div>
-
-    <div class="form-group" id="ollamaModelGroup" style="display: none;">
-        <label for="ollamaModel">Ollama Model:</label>
-        <input type="text" id="ollamaModel" value="llama2" placeholder="e.g. llama2, mistral">
-    </div>
-
-    <div class="form-group" id="openRouterModelGroup" style="display: none;">
-        <label for="openRouterModel">OpenRouter Model:</label>
-        <input type="text" id="openRouterModel" value="anthropic/claude-3-haiku" placeholder="e.g. anthropic/claude-3-haiku">
-    </div>
-
-    <button id="startBtn">Start Flooding</button>
-    <button id="stopBtn" disabled>Stop Flooding</button>
-
-    <div class="control-panel" id="controlPanel">
-        <h2>Bot Control</h2>
-
-        <div class="reaction-buttons">
-            <h3>Send Reaction to All Bots</h3>
-            <button id="reactionThinking">🤔 Thinking</button>
-            <button id="reactionWow">😲 Wow</button>
-            <button id="reactionHeart">❤️ Heart</button>
-            <button id="reactionThumbsUp">👍 ThumbsUp</button>
-        </div>
-
-        <div class="answer-buttons">
-            <h3>Select Answer for All Bots</h3>
-            <button id="answer0">Answer 1 (Red)</button>
-            <button id="answer1">Answer 2 (Blue)</button>
-            <button id="answer2">Answer 3 (Yellow)</button>
-            <button id="answer3">Answer 4 (Green)</button>
-        </div>
-    </div>
-
-    <div class="log" id="log"></div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>

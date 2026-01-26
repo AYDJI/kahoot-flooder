@@ -609,7 +609,7 @@ io.on('connection', (socket) => {
 });
 
 async function startFlooding(config, socket) {
-    const {
+        const {
         pin,
         numBots,
         nameTemplate,
@@ -621,7 +621,9 @@ async function startFlooding(config, socket) {
         aiProvider,
         apiKey,
         ollamaModel,
-        openRouterModel
+        openRouterModel,
+        useCustomNames,
+        botNames
     } = config;
 
     aiConfig = enableAI ? { aiProvider, apiKey, ollamaModel, openRouterModel } : null;
@@ -630,15 +632,16 @@ async function startFlooding(config, socket) {
 
     const batchSize = 6;
 
-    for (let batchStart = 0; batchStart < numBots; batchStart += batchSize) {
-        if (stopRequested) break;
+        for (let batchStart = 0; batchStart < numBots; batchStart += batchSize) {
+            if (stopRequested) break;
 
         const batchEnd = Math.min(batchStart + batchSize, numBots);
         socket.emit('log', `Creating bots ${batchStart + 1} to ${batchEnd}...`);
 
         const promises = [];
         for (let i = batchStart; i < batchEnd; i++) {
-            promises.push(createBot(i, pin, nameTemplate, enableReactions, reactionChoice, headlessMode, socket));
+            const botNamesList = useCustomNames ? botNames : null;
+            promises.push(createBot(i, pin, nameTemplate, botNamesList, enableReactions, reactionChoice, headlessMode, socket));
         }
 
         await Promise.all(promises);
@@ -654,7 +657,7 @@ async function startFlooding(config, socket) {
     socket.emit('botsReady');
 }
 
-async function createBot(botIndex, pin, nameTemplate, enableReactions, reactionChoice, headlessMode, socket) {
+async function createBot(botIndex, pin, nameTemplate, botNamesList, enableReactions, reactionChoice, headlessMode, socket) {
     try {
         const browser = await puppeteer.launch({
             headless: headlessMode,
@@ -684,7 +687,15 @@ async function createBot(botIndex, pin, nameTemplate, enableReactions, reactionC
 
         // Wait for and enter nickname
         await page.waitForSelector('#nickname', { timeout: 10000 });
-        const nickname = nameTemplate.replace('{}', (botIndex + 1).toString());
+        // If a per-bot name list is provided, use it; otherwise fall back to template
+        let nickname;
+        console.log(`Bot ${botIndex + 1} nickname source: ${Array.isArray(botNamesList) ? 'custom' : 'template'}, value: ${Array.isArray(botNamesList) ? botNamesList[botIndex] : null}`);
+        if (Array.isArray(botNamesList) && botNamesList.length > botIndex) {
+            const candidate = botNamesList[botIndex];
+            nickname = candidate && candidate.length > 0 ? candidate : nameTemplate.replace('{}', (botIndex + 1).toString());
+        } else {
+            nickname = nameTemplate.replace('{}', (botIndex + 1).toString());
+        }
         await page.type('#nickname', nickname);
         await page.keyboard.press('Enter');
 
