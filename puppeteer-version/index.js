@@ -41,7 +41,7 @@ async function queryGemini(question, answers, apiKey) {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const numOptions = answers.length;
-        const optionsList = Array.from({length: numOptions}, (_, i) => i + 1).join(', ');
+        const optionsList = Array.from({ length: numOptions }, (_, i) => i + 1).join(', ');
         const prompt = `Question: ${question}\n\nAnswer options:\n${answers.map((ans, i) => `${i + 1}. ${ans}`).join('\n')}\n\nWhich answer option number (${optionsList}) is correct? Respond with ONLY the number (1-${numOptions}), nothing else.`;
 
         const result = await model.generateContent(prompt);
@@ -62,7 +62,7 @@ async function queryOllama(question, answers, model) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: model,
-                prompt: `Question: ${question}\n\nAnswer options:\n${answers.map((ans, i) => `${i + 1}. ${ans}`).join('\n')}\n\nWhich answer option number (${Array.from({length: answers.length}, (_, i) => i + 1).join(', ')}) is correct? Respond with ONLY the number (1-${answers.length}), nothing else.`,
+                prompt: `Question: ${question}\n\nAnswer options:\n${answers.map((ans, i) => `${i + 1}. ${ans}`).join('\n')}\n\nWhich answer option number (${Array.from({ length: answers.length }, (_, i) => i + 1).join(', ')}) is correct? Respond with ONLY the number (1-${answers.length}), nothing else.`,
                 stream: false
             })
         });
@@ -87,7 +87,7 @@ async function queryOpenRouter(question, answers, apiKey, model) {
                 model: model,
                 messages: [{
                     role: 'user',
-                    content: `Question: ${question}\n\nAnswer options:\n${answers.map((ans, i) => `${i + 1}. ${ans}`).join('\n')}\n\nWhich answer option number (${Array.from({length: answers.length}, (_, i) => i + 1).join(', ')}) is correct? Respond with ONLY the number (1-${answers.length}), nothing else.`
+                    content: `Question: ${question}\n\nAnswer options:\n${answers.map((ans, i) => `${i + 1}. ${ans}`).join('\n')}\n\nWhich answer option number (${Array.from({ length: answers.length }, (_, i) => i + 1).join(', ')}) is correct? Respond with ONLY the number (1-${answers.length}), nothing else.`
                 }]
             })
         });
@@ -174,9 +174,9 @@ async function extractQuestionAndAnswers(page) {
 
             const question = questionElement.textContent.trim();
             // Filter out invalid question texts
-            if (question.length < 10 || 
-                question.length > 500 || 
-                question.toLowerCase().includes('kahoot!') || 
+            if (question.length < 10 ||
+                question.length > 500 ||
+                question.toLowerCase().includes('kahoot!') ||
                 question.toLowerCase().includes('pin') ||
                 question.toLowerCase().includes('waiting') ||
                 question.toLowerCase().includes('loading') ||
@@ -196,13 +196,13 @@ async function extractQuestionAndAnswers(page) {
             ];
 
             let answerElements = [];
-            
+
             for (const selector of answerSelectors) {
                 const elements = Array.from(document.querySelectorAll(selector));
                 for (const el of elements) {
                     const style = window.getComputedStyle(el);
                     // Check if element is visible
-                    if (style.display === 'none' || 
+                    if (style.display === 'none' ||
                         style.visibility === 'hidden' ||
                         el.offsetWidth === 0 ||
                         el.offsetHeight === 0) {
@@ -211,7 +211,7 @@ async function extractQuestionAndAnswers(page) {
 
                     // Get the text content
                     const text = el.textContent.trim();
-                    
+
                     // Filter out invalid answer texts (UI elements, navigation, etc.)
                     const invalidTexts = [
                         'jump to main content',
@@ -256,12 +256,12 @@ async function extractQuestionAndAnswers(page) {
                     while (parent && parent !== document.body) {
                         const tagName = parent.tagName.toLowerCase();
                         const role = parent.getAttribute('role');
-                        const hasClickHandler = parent.onclick !== null || 
-                                                parent.getAttribute('onclick') !== null ||
-                                                parent.style.cursor === 'pointer';
-                        
-                        if (tagName === 'button' || 
-                            role === 'button' || 
+                        const hasClickHandler = parent.onclick !== null ||
+                            parent.getAttribute('onclick') !== null ||
+                            parent.style.cursor === 'pointer';
+
+                        if (tagName === 'button' ||
+                            role === 'button' ||
                             hasClickHandler ||
                             parent.classList.contains('button') ||
                             parent.getAttribute('data-functional-selector')?.startsWith('answer-')) {
@@ -278,7 +278,7 @@ async function extractQuestionAndAnswers(page) {
                         index: answerElements.length
                     });
                 }
-                
+
                 // If we found at least 2 answers, we're good
                 if (answerElements.length >= 2) {
                     break;
@@ -294,7 +294,7 @@ async function extractQuestionAndAnswers(page) {
             // Get all elements in document order
             const allElements = Array.from(document.querySelectorAll('p.centered-floated-text__ChoiceText-sc-wq1dlx-6, p[class*="ChoiceText"]'));
             const orderedAnswers = [];
-            
+
             // Reorder answerElements based on DOM position
             for (const domEl of allElements) {
                 const found = answerElements.find(ae => ae.originalElement === domEl);
@@ -302,7 +302,7 @@ async function extractQuestionAndAnswers(page) {
                     orderedAnswers.push(found);
                 }
             }
-            
+
             // If ordering worked, use it; otherwise keep original order
             if (orderedAnswers.length === answerElements.length) {
                 answerElements = orderedAnswers;
@@ -314,12 +314,12 @@ async function extractQuestionAndAnswers(page) {
             });
 
             const answers = answerElements.map(a => a.text);
-            const answerElementsData = answerElements.map(a => ({ 
-                text: a.text, 
+            const answerElementsData = answerElements.map(a => ({
+                text: a.text,
                 index: a.index,
                 selector: a.clickableElement.getAttribute('data-functional-selector') || null
             }));
-            
+
             return { question, answers, answerElements: answerElementsData };
         });
 
@@ -362,7 +362,7 @@ async function monitorForQuestions(page, botIndex, socket) {
                         socket.emit('log', `Question: ${qa.question}`);
                         currentQuestion = qa.question;
                         currentAnswer = null; // Reset answer
-                        
+
                         if (aiConfig) {
                             try {
                                 // Query AI once and share answer across all bots
@@ -389,12 +389,12 @@ async function monitorForQuestions(page, botIndex, socket) {
                 if (currentAnswer !== null && currentAnswer >= 0 && currentAnswer < qa.answers.length) {
                     // Wait a bit for answer buttons to be fully rendered
                     await sleep(500);
-                    
+
                     const answerText = qa.answers[currentAnswer];
-                    
+
                     // Try to click the answer using Puppeteer's native methods
                     let clicked = false;
-                    
+
                     try {
                         // Method 1: Try data-functional-selector with Puppeteer
                         try {
@@ -428,29 +428,29 @@ async function monitorForQuestions(page, botIndex, socket) {
                                     const visibleAnswers = allAnswerParagraphs
                                         .filter(el => {
                                             const style = window.getComputedStyle(el);
-                                            return style.display !== 'none' && 
-                                                   style.visibility !== 'hidden' &&
-                                                   el.offsetWidth > 0 &&
-                                                   el.offsetHeight > 0;
+                                            return style.display !== 'none' &&
+                                                style.visibility !== 'hidden' &&
+                                                el.offsetWidth > 0 &&
+                                                el.offsetHeight > 0;
                                         });
 
                                     if (visibleAnswers.length > answerIndex) {
                                         const answerParagraph = visibleAnswers[answerIndex];
-                                        
+
                                         // Find the clickable parent
                                         let clickableElement = answerParagraph;
                                         let parent = answerParagraph.parentElement;
                                         let maxDepth = 10;
                                         let depth = 0;
-                                        
+
                                         while (parent && parent !== document.body && depth < maxDepth) {
                                             depth++;
                                             const tagName = parent.tagName.toLowerCase();
                                             const role = parent.getAttribute('role');
                                             const className = parent.className || '';
-                                            
+
                                             // Check if it's a clickable element
-                                            if (tagName === 'button' || 
+                                            if (tagName === 'button' ||
                                                 role === 'button' ||
                                                 parent.onclick !== null ||
                                                 parent.getAttribute('onclick') !== null ||
@@ -466,7 +466,7 @@ async function monitorForQuestions(page, botIndex, socket) {
 
                                         return clickableElement;
                                     }
-                                    
+
                                     return null;
                                 }, currentAnswer);
 
@@ -491,12 +491,12 @@ async function monitorForQuestions(page, botIndex, socket) {
                                         }
                                         const visibleAnswers = allAnswerParagraphs.filter(el => {
                                             const style = window.getComputedStyle(el);
-                                            return style.display !== 'none' && 
-                                                   style.visibility !== 'hidden' &&
-                                                   el.offsetWidth > 0 &&
-                                                   el.offsetHeight > 0;
+                                            return style.display !== 'none' &&
+                                                style.visibility !== 'hidden' &&
+                                                el.offsetWidth > 0 &&
+                                                el.offsetHeight > 0;
                                         });
-                                        
+
                                         if (visibleAnswers.length > answerIndex) {
                                             // Get the clickable parent's bounding box
                                             const answerParagraph = visibleAnswers[answerIndex];
@@ -504,14 +504,14 @@ async function monitorForQuestions(page, botIndex, socket) {
                                             let parent = answerParagraph.parentElement;
                                             let maxDepth = 10;
                                             let depth = 0;
-                                            
+
                                             while (parent && parent !== document.body && depth < maxDepth) {
                                                 depth++;
                                                 const tagName = parent.tagName.toLowerCase();
                                                 const role = parent.getAttribute('role');
                                                 const className = parent.className || '';
-                                                
-                                                if (tagName === 'button' || 
+
+                                                if (tagName === 'button' ||
                                                     role === 'button' ||
                                                     parent.onclick !== null ||
                                                     parent.getAttribute('data-functional-selector')?.startsWith('answer-') ||
@@ -523,13 +523,13 @@ async function monitorForQuestions(page, botIndex, socket) {
                                                 }
                                                 parent = parent.parentElement;
                                             }
-                                            
+
                                             const rect = clickableElement.getBoundingClientRect();
                                             return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
                                         }
                                         return null;
                                     }, currentAnswer);
-                                    
+
                                     if (box) {
                                         await page.mouse.click(box.x, box.y);
                                         console.log(`Bot ${botIndex + 1}: Clicked answer ${currentAnswer + 1} by coordinates (${box.x}, ${box.y})`);
@@ -609,7 +609,7 @@ io.on('connection', (socket) => {
 });
 
 async function startFlooding(config, socket) {
-        const {
+    const {
         pin,
         numBots,
         nameTemplate,
@@ -632,8 +632,8 @@ async function startFlooding(config, socket) {
 
     const batchSize = 6;
 
-        for (let batchStart = 0; batchStart < numBots; batchStart += batchSize) {
-            if (stopRequested) break;
+    for (let batchStart = 0; batchStart < numBots; batchStart += batchSize) {
+        if (stopRequested) break;
 
         const batchEnd = Math.min(batchStart + batchSize, numBots);
         socket.emit('log', `Creating bots ${batchStart + 1} to ${batchEnd}...`);
